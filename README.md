@@ -4,4 +4,4 @@
 
 Készítette: Nagy Marcella és Kökény Zoltán Tamás
 
-A kódot működését demonstráló Colab-munkafüzet itt érhető el: **link**
+A kód működését demonstráló Colab-munkafüzet itt érhető el: **link**
