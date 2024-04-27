@@ -20,7 +20,9 @@ class TSNE:
 
         for t in range(self.num_iterations):
             Q = self._q_i_j(map_points[-1])
-            if t < 25:
+            if t < 50:
+                # Az optimalizálás kezdetekor a kiszámított P-ket 4-el beszorozzuk
+                # Az eredeti cikk is csak az első 50 iterációnál használta
                 grad = self._gradient(P=4 * P, Q=Q, y=map_points[-1])
             else:
                 grad = self._gradient(P=P, Q=Q, y=map_points[-1])
