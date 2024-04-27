@@ -111,5 +111,5 @@ class TSNE:
 
 # TODO: docstring-ek hozzáadása,
 #  és ellenőrzés
-#  kell az early exagguration?
+#  kell az early exagguration? - tesztelés
 #  lehet nem kell a függvények elé a _
