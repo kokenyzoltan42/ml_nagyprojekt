@@ -60,26 +60,37 @@ class TSNE:
     def _p_i_j(dists: np.array, sigma: np.array) -> np.array:
         """
         Páronkénti szomszédságot / hasonlóságot mérő
-        feltételes valószínűségek meghatározása
+        feltételes valószínűségek meghatározása (p_{i|j})
         :param dists: páronkénti euklideszi távolságok
         :param sigma: Pontokhoz tartozó szórások
         :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-t (vektort valahogy bele tenni(?))
         """
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
-        # Megszabjuk, hogy p_{ii} nullával legyen egyenlő
+        # Megszabjuk, hogy p_{i|i} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
-
+        # megnézni, hogy működik-e enélkül(?)
         e += 1e-8
         return e / e.sum(axis=1).reshape([-1, 1])
 
     @staticmethod
     def _p_j_i(dists: np.array, sigma: np.array) -> np.array:
+        """
+        Páronkénti szomszédságot / hasonlóságot mérő
+        feltételes valószínűségek meghatározása (p_{j|i})
+        :param dists: páronkénti euklideszi távolságok
+        :param sigma: Pontokhoz tartozó szórások
+        :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-t (vektort valahogy bele tenni(?))
+        """
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
+        # Megszabjuk, hogy p_{j|j} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
         e += 1e-8
         return e / e.sum(axis=0).reshape([-1, 1])
 
     def _p_joint(self) -> np.array:
+        """
+        :return: p_{ij} (jobb megfogalmazás (?))
+        """
         N = self.data.shape[0]
         dists = self._pairwise_distances(data=self.data)
         sigmas = self._find_sigmas(dists=dists, perplexity=self.perp)
@@ -89,12 +100,20 @@ class TSNE:
 
     @staticmethod
     def _perp(p_cond: np.array) -> float:
+        # Perp (Equation mennyi (?)) kiszámolása
         entropy = -np.sum(p_cond * np.log2(p_cond), axis=1)
         return 2 ** entropy
 
     def _find_sigmas(self, dists: np.array, perplexity: int) -> np.array:
+        """
+        Az adatpontohoz tartozó szórás, szigmák keresése
+        :param dists: adatpontok(?) távolsága
+        :param perplexity: perplexity
+        :return: adatpontokhoz tartozó szórások (jobb megfogalmazás)
+        """
         found_sigmas = np.zeros(dists.shape[0])
         for i in range(dists.shape[0]):
+            # itt p_{i|j} helyett p_{ij} kell?
             func = lambda sig: self._perp(self._p_i_j(dists=dists[i:i + 1, :],
                                                       sigma=np.array([sig])))
             found_sigmas[i] = self._binary_search(func=func, goal=perplexity)
@@ -103,6 +122,17 @@ class TSNE:
     @staticmethod
     def _binary_search(func, goal: int, tol=1e-10, max_iters: int = 1000, lowb: int = 1e-20,
                        uppb: int = 10000) -> float:
+        """
+        Bináris keresés - intervallum felező módszer segítségével keressük a szórást,
+        vagyis normális eloszlásbeli szigmákat
+        :param func: Perp függvény, amit meg akarunk oldani
+        :param goal: az a szigma, ami kielégíti a fenti egyenletet
+        :param tol: tolerancia nagysága
+        :param max_iters: megengedett maximális iteráció szám
+        :param lowb: alsó határ
+        :param uppb: felső határ
+        :return: a func egyenletet kielégító szigma
+        """
         guess = 0
         for _ in range(max_iters):
             guess = (uppb + lowb) / 2.
@@ -118,12 +148,25 @@ class TSNE:
         return guess
 
     def _q_i_j(self, y: np.array) -> np.array:
+        """
+        :param y: alacsonyabb dimenziójú pontok
+        :return: Alacsonyabb dimenziós pontok (térképpontok(?)) szomszédságainak / hasonlóságainak vektorai
+        """
+        # alacsonyabb dimenziós pontok (térképpontok(?)) közötti euklideszi távolság
         dists = self._pairwise_distances(y)
         nom = 1 / (1 + dists)
+        # q_{ii}-ket 0-val tesszük egyenlővé
         np.fill_diagonal(nom, val=0.)
         return nom / np.sum(np.sum(nom))
 
     def _gradient(self, P: np.array, Q: np.array, y: np.array) -> np.array:
+        """
+        A költségfüggvény gradiensének kiszámolása
+        :param P: Magasabb dimenziós pontok szomszédságának vektorai(?)
+        :param Q: alacsony dimenziós pontok szomszédsági vektorai(?)
+        :param y: (térképpontok(?)) alacsony dimenziós pontok
+        :return: gradiens (vektor(bele tegyük??))
+        """
         # (n, no_dims) = y.shape - Nem használjuk
         pq_diff = P - Q
         y_diff = np.expand_dims(y, axis=1) - np.expand_dims(y, axis=0)
@@ -134,9 +177,13 @@ class TSNE:
 
     @staticmethod
     def _momentum(t: int) -> float:
+        """
+        :param t: t-edik iteráció
+        :return: \alpha momentum a t-edik iterációnál
+        """
         return 0.5 if t < 250 else 0.8
 
-# TODO: docstring-ek hozzáadása,
+# TODO:
 #  és ellenőrzés
 #  kell az early exagguration? - tesztelés
 #  lehet nem kell a függvények elé a _
