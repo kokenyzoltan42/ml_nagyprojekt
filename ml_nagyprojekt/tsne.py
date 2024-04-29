@@ -69,7 +69,7 @@ class TSNE:
         # Megszabjuk, hogy p_{i|i} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
         # megnézni, hogy működik-e enélkül(?)
-        e += 1e-8
+        # e += 1e-8
         return e / e.sum(axis=1).reshape([-1, 1])
 
     @staticmethod
@@ -84,7 +84,7 @@ class TSNE:
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
         # Megszabjuk, hogy p_{j|j} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
-        e += 1e-8
+        # e += 1e-8
         return e / e.sum(axis=0).reshape([-1, 1])
 
     def _p_joint(self) -> np.array:
@@ -113,7 +113,6 @@ class TSNE:
         """
         found_sigmas = np.zeros(dists.shape[0])
         for i in range(dists.shape[0]):
-            # itt p_{i|j} helyett p_{ij} kell?
             func = lambda sig: self._perp(self._p_i_j(dists=dists[i:i + 1, :],
                                                       sigma=np.array([sig])))
             found_sigmas[i] = self._binary_search(func=func, goal=perplexity)
