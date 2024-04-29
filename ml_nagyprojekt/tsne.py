@@ -10,38 +10,65 @@ class TSNE:
         self.perp = perp
 
     def run(self) -> np.array:
+        """
+        Lefuttatja az algoritmust,
+        A felépítése nagyjából azonos a pszeudokódban lévővel
+        :return: Alacsony dimenziós adatreprezentáció
+        """
+        # Adatpontok számának meghatározása
         N = self.data.shape[0]
+        # p_{ij}-k kiszámolása
         P = self._p_joint()
 
         map_points = []
+        # (0, 10^{-4}) paraméterű normális eloszlás szerint generálja le
+        # véletlenszerűen a sík (/ adott dimenzió) pontjait
         new_mappoints = np.random.normal(loc=0.0, scale=1e-4, size=(N, self.ydim))
+        # Mivel az iterációs képletben már használjuk a 2-vel korábbi iteráció eredményeit,
+        # ezért még az iteráció kezdete előtt kétszer adjuk meg a kezdő pontokat
         map_points.append(new_mappoints)
         map_points.append(new_mappoints)
 
         for t in range(self.num_iterations):
             Q = self._q_i_j(map_points[-1])
             if t < 50:
+                # Gradiens kiszámolása
                 # Az optimalizálás kezdetekor a kiszámított P-ket 4-el beszorozzuk
                 # Az eredeti cikk is csak az első 50 iterációnál használta
                 grad = self._gradient(P=4 * P, Q=Q, y=map_points[-1])
             else:
                 grad = self._gradient(P=P, Q=Q, y=map_points[-1])
+            # Alacsony dimenziós pontok t-edik iterációjának meghatározása:
             new_mappoints = map_points[-1] - self.learning_rate * grad + \
                             self._momentum(t) * (map_points[-1] - map_points[-2])
             map_points.append(new_mappoints)
 
+            # "Optimalizálás"-hoz van, lehet kiszedhetjük (?)
             if t % 10 == 0:
                 Q = np.maximum(Q, 1e-12)
         return new_mappoints
 
     @staticmethod
     def _pairwise_distances(data: np.array) -> np.array:
+        """
+        :param data:
+        :return: Az pontok páronkénti euklideszi távolságának meghatározása
+        """
         return np.sum((data[None, :] - data[:, None]) ** 2, axis=2)
 
     @staticmethod
     def _p_i_j(dists: np.array, sigma: np.array) -> np.array:
+        """
+        Páronkénti szomszédságot / hasonlóságot mérő
+        feltételes valószínűségek meghatározása
+        :param dists: páronkénti euklideszi távolságok
+        :param sigma: Pontokhoz tartozó szórások
+        :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-t (vektort valahogy bele tenni(?))
+        """
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
+        # Megszabjuk, hogy p_{ii} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
+
         e += 1e-8
         return e / e.sum(axis=1).reshape([-1, 1])
 
