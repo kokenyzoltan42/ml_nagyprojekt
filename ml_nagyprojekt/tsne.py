@@ -90,7 +90,7 @@ class TSNE:
 
     def _p_joint(self) -> np.array:
         """
-        :return: p_{ij} (jobb megfogalmazás (?))
+        :return: szimmetrikus valószínűségek kiszámolása
         """
         N = self.data.shape[0]
         dists = self._pairwise_distances(data=self.data)
@@ -101,16 +101,16 @@ class TSNE:
 
     @staticmethod
     def _perp(p_cond: np.array) -> float:
-        # Perp (Equation mennyi (?)) kiszámolása
+        # Perp kiszámolása (3) szerint
         entropy = -np.sum(p_cond * np.log2(p_cond), axis=1)
         return 2 ** entropy
 
     def _find_sigmas(self, dists: np.array, perplexity: int) -> np.array:
         """
         Az adatpontohoz tartozó szórás, szigmák keresése
-        :param dists: adatpontok(?) távolsága
+        :param dists: adatpontok távolsága
         :param perplexity: perplexity
-        :return: adatpontokhoz tartozó szórások (jobb megfogalmazás)
+        :return: adatpontokhoz tartozó szórások
         """
         found_sigmas = np.zeros(dists.shape[0])
         for i in range(dists.shape[0]):
@@ -150,7 +150,7 @@ class TSNE:
     def _q_i_j(self, y: np.array) -> np.array:
         """
         :param y: alacsonyabb dimenziójú pontok
-        :return: Alacsonyabb dimenziós pontok (térképpontok(?)) szomszédságainak / hasonlóságainak vektorai
+        :return: térképpontok szomszédságainak / hasonlóságainak vektorai
         """
         # alacsonyabb dimenziós pontok (térképpontok(?)) közötti euklideszi távolság
         dists = self._pairwise_distances(y)
@@ -164,10 +164,9 @@ class TSNE:
         A költségfüggvény gradiensének kiszámolása
         :param P: Magasabb dimenziós pontok szomszédságának vektorai(?)
         :param Q: alacsony dimenziós pontok szomszédsági vektorai(?)
-        :param y: (térképpontok(?)) alacsony dimenziós pontok
-        :return: gradiens (vektor(bele tegyük??))
+        :param y: térképpontok
+        :return: gradiensvektor
         """
-        # (n, no_dims) = y.shape - Nem használjuk
         pq_diff = P - Q
         y_diff = np.expand_dims(y, axis=1) - np.expand_dims(y, axis=0)
         dists = self._pairwise_distances(data=y)
@@ -184,6 +183,4 @@ class TSNE:
         return 0.5 if t < 250 else 0.8
 
 # TODO:
-#  és ellenőrzés
-#  kell az early exagguration? - tesztelés
 #  lehet nem kell a függvények elé a _
