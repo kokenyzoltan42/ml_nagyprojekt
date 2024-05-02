@@ -51,7 +51,7 @@ class TSNE:
     @staticmethod
     def _pairwise_distances(data: np.array) -> np.array:
         """
-        :param data:
+        :param data: pontok koordinátasora
         :return: Az pontok páronkénti euklideszi távolságának meghatározása
         """
         return np.sum((data[None, :] - data[:, None]) ** 2, axis=2)
@@ -63,7 +63,7 @@ class TSNE:
         feltételes valószínűségek meghatározása (p_{i|j})
         :param dists: páronkénti euklideszi távolságok
         :param sigma: Pontokhoz tartozó szórások
-        :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-t (vektort valahogy bele tenni(?))
+        :return: Annak a valószínűsége, hogy az x_j szomszédjának választja az x_i-ket, vektorba rendezve 
         """
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
         # Megszabjuk, hogy p_{i|i} nullával legyen egyenlő
@@ -79,7 +79,7 @@ class TSNE:
         feltételes valószínűségek meghatározása (p_{j|i})
         :param dists: páronkénti euklideszi távolságok
         :param sigma: Pontokhoz tartozó szórások
-        :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-t (vektort valahogy bele tenni(?))
+        :return: Annak a valószínűsége, hogy az x_i szomszédjának választja x_j-ket, vektorba rendezve
         """
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
         # Megszabjuk, hogy p_{j|j} nullával legyen egyenlő
@@ -152,7 +152,7 @@ class TSNE:
         :param y: alacsonyabb dimenziójú pontok
         :return: térképpontok szomszédságainak / hasonlóságainak vektorai
         """
-        # alacsonyabb dimenziós pontok (térképpontok(?)) közötti euklideszi távolság
+        # alacsonyabb dimenziós pontok (térképpontok) közötti euklideszi távolság
         dists = self._pairwise_distances(y)
         nom = 1 / (1 + dists)
         # q_{ii}-ket 0-val tesszük egyenlővé
@@ -162,8 +162,8 @@ class TSNE:
     def _gradient(self, P: np.array, Q: np.array, y: np.array) -> np.array:
         """
         A költségfüggvény gradiensének kiszámolása
-        :param P: Magasabb dimenziós pontok szomszédságának vektorai(?)
-        :param Q: alacsony dimenziós pontok szomszédsági vektorai(?)
+        :param P: Magasabb dimenziós pontok szomszédságának vektorai
+        :param Q: alacsony dimenziós pontok szomszédsági vektorai
         :param y: térképpontok
         :return: gradiensvektor
         """
