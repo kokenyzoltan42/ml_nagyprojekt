@@ -44,8 +44,8 @@ class TSNE:
             map_points.append(new_mappoints)
 
             # "Optimalizálás"-hoz van, lehet kiszedhetjük (?)
-            if t % 10 == 0:
-                Q = np.maximum(Q, 1e-12)
+            #if t % 10 == 0:
+             #   Q = np.maximum(Q, 1e-12)
         return new_mappoints
 
     @staticmethod
