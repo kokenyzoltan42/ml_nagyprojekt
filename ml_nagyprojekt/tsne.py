@@ -171,7 +171,7 @@ class TSNE:
         y_diff = np.expand_dims(y, axis=1) - np.expand_dims(y, axis=0)
         dists = self._pairwise_distances(data=y)
         aux = 1 / (1 + dists)
-        result = 12 * (np.expand_dims(pq_diff, axis=2) * y_diff * np.expand_dims(aux, axis=2)).sum(axis=1)
+        result = 4 * (np.expand_dims(pq_diff, axis=2) * y_diff * np.expand_dims(aux, axis=2)).sum(axis=1)
         return result
 
     @staticmethod
