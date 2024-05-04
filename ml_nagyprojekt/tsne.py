@@ -97,7 +97,7 @@ class TSNE:
         sigmas = self._find_sigmas(dists=dists, perplexity=self.perp)
         p_cond_1 = self._p_i_j(dists=dists, sigma=sigmas)
         p_cond_2 = self._p_j_i(dists=dists, sigma=sigmas)
-        return (p_cond_1 + p_cond_2) / (2. * N)
+        return (p_cond_1 + p_cond_2) / (2.)
 
     @staticmethod
     def _perp(p_cond: np.array) -> float:
