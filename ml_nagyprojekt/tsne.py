@@ -52,8 +52,8 @@ class TSNE:
     @staticmethod
     def pairwise_distances(data: np.array) -> np.array:
         """
-        :param data: pontok koordinátasora
-        :return: Az pontok páronkénti euklideszi távolságának meghatározása
+        :param data: adatpontok
+        :return: A pontok páronkénti euklideszi távolságának meghatározása
         """
         return np.sum((data[None, :] - data[:, None]) ** 2, axis=2)
 
@@ -69,7 +69,7 @@ class TSNE:
         e = np.exp(-dists / (2 * np.square(sigma.reshape((-1, 1)))))
         # Megszabjuk, hogy p_{i|i} nullával legyen egyenlő
         np.fill_diagonal(e, val=0.)
-        # 0-val való osztás elkerülése  érdekében
+        # 0-val való osztás elkerülése érdekében
         e += 1e-8
         return e / e.sum(axis=1).reshape([-1, 1])
 
@@ -102,7 +102,7 @@ class TSNE:
 
     @staticmethod
     def calc_perp(p_cond: np.array) -> float:
-        # Perp kiszámolása (3) szerint
+        # Perp kiszámolása (3)-as egyenlet szerint
         entropy = -np.sum(p_cond * np.log2(p_cond), axis=1)
         return 2 ** entropy
 
@@ -110,7 +110,7 @@ class TSNE:
         """
         Az adatpontohoz tartozó szórás, szigmák keresése
         :param dists: adatpontok távolsága
-        :param perplexity: perplexity
+        :param perplexity: szomszédok száma
         :return: adatpontokhoz tartozó szórások
         """
         found_sigmas = np.zeros(dists.shape[0])
@@ -127,7 +127,7 @@ class TSNE:
         """
         Bináris keresés - intervallum felező módszer segítségével keressük a szórást,
         vagyis normális eloszlásbeli szigmákat
-        :param func: Perp függvény, amit meg akarunk oldani
+        :param func: Perp egyenlet, amit meg akarunk oldani szigmára
         :param goal: az a szigma, ami kielégíti a fenti egyenletet
         :param tol: tolerancia nagysága
         :param max_iters: megengedett maximális iteráció szám
@@ -154,7 +154,7 @@ class TSNE:
         :param y: alacsonyabb dimenziójú pontok
         :return: térképpontok szomszédságainak / hasonlóságainak vektorai
         """
-        # alacsonyabb dimenziós pontok (térképpontok) közötti euklideszi távolság
+        # Alacsonyabb dimenziós pontok (térképpontok) közötti euklideszi távolság
         dists = self.pairwise_distances(y)
         nom = 1 / (1 + dists)
         # q_{ii}-ket 0-val tesszük egyenlővé
