@@ -115,8 +115,9 @@ class TSNE:
         """
         found_sigmas = np.zeros(dists.shape[0])
         for i in range(dists.shape[0]):
-            func = lambda sig: self.calc_perp(self.p_i_j(dists=dists[i:i + 1, :],
-                                                         sigma=np.array([sig])))
+            def func(sig):
+                return self.calc_perp(self.p_i_j(dists=dists[i:i + 1, :], sigma=np.array([sig])))
+
             found_sigmas[i] = self.binary_search(func=func, goal=perplexity)
         return found_sigmas
 
